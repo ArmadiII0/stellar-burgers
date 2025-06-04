@@ -1,16 +1,16 @@
 import * as orderFixture from '../fixtures/order.json';
 
-const testURL = 'http://localhost:4000';
 const dataCyBun = '[data-cy="bun"]';
 const dataCyBunFirst = '[data-cy="bun"]:first-of-type';
 const dataCyOrder = '[data-cy-order]';
 const modals = '#modals';
 const dataCyConstructor = '.HEJ0tV35JHL7iuHL89vk';
+const baseUrl = 'http://localhost:4000';
 
 describe('Тест бургерной', () => {
   beforeEach(() => {
     cy.intercept('GET', 'api/ingredients', { fixture: 'ingredients' });
-    cy.visit(testURL);
+    cy.visit(baseUrl);
   });
 
   it('Проверка ингредиентов', () => {
@@ -26,11 +26,7 @@ describe('Тест бургерной', () => {
         .then((ingredientName) => {
           cy.log('Название ингредиента:', ingredientName);
           cy.get(dataCyBunFirst).click();
-
-          // Проверяем, что URL изменился на страницу ингредиента
           cy.url().should('include', '/ingredients/');
-
-          // Проверяем, что на странице ингредиента есть название
           cy.contains(ingredientName.trim()).should('be.visible');
         });
     });
@@ -65,7 +61,7 @@ describe('Тест бургерной', () => {
       cy.intercept('GET', 'api/auth/user', { fixture: 'user' });
       cy.intercept('POST', 'api/orders', { fixture: 'order' });
       cy.intercept('GET', 'api/ingredients', { fixture: 'ingredients' });
-      cy.visit(testURL);
+      cy.visit(baseUrl);
     });
 
     it('Оформление', () => {
@@ -84,13 +80,12 @@ describe('Тест бургерной', () => {
 
       cy.get(dataCyOrder).should('be.disabled');
 
-      // Проверяем очистку конструктора после оформления
       cy.get(dataCyConstructor).children().should('have.length', 1);
     });
 
     afterEach(() => {
-      cy.clearCookie('accessToken');
-      localStorage.removeItem('refreshToken');
+      cy.clearCookies();
+      cy.clearLocalStorage();
     });
   });
 
@@ -114,4 +109,8 @@ describe('Тест бургерной', () => {
     });
   });
 
+  afterEach(() => {
+    cy.clearCookies();
+    cy.clearLocalStorage();
+  });
 });
